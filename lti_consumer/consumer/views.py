@@ -215,3 +215,30 @@ def create_launch_param(request, testcase_id):
     params = {'form': form, 'testcase': testcase,
               'default_launch_params': default_launch_params}
     return render(request, 'consumer/create_launch_param.html', params)
+
+
+def copy_testcase(source_testcase_name):
+    '''
+    creates a copy of source_testcase
+
+    Keyword arguments:
+        source_testcase_name -- name of the testcase to source from
+          ! this implies that testcase names are unique!
+    '''
+    # TODO: validate `source_testcase_name`
+    source_tc = Testcase.objects.get(name=source_testcase_name)
+
+    target_tc = Testcase(
+        name='copy of {}'.format(source_tc.name),
+        launch_url=source_tc.launch_url,
+        consumer_key=source_tc.consumer_key,
+        consumer_secret=source_tc.consumer_secret)
+    target_tc.save()
+
+    for lp in source_tc.launchparam_set.all():
+        target_lp = LaunchParam(
+            testcase=target_tc, name=lp.name, value=lp.value)
+        target_lp.save()
+
+    return target_tc
+
